@@ -137,70 +137,46 @@ body{
 padding:12px;
 }
 
-h1{
-font-size:30px;
-line-height:1.2;
-}
-
-.tabs{
-flex-wrap:wrap;
-gap:8px;
-}
-
-.tab{
-flex:1;
-min-width:130px;
-text-align:center;
-}
-
 .grid{
-grid-template-columns:1fr;
-gap:18px;
-}
-
-.songgrid{
-grid-template-columns:1fr;
-gap:18px;
-}
-
-.row{
 display:block;
+}
+
+/* blocs gauche/droite empilés */
+#answers{
+margin-bottom:30px;
+}
+
+/* chaque ligne de saisie */
+.row{
+display:flex;
+flex-direction:column;
+align-items:stretch;
+gap:8px;
 margin:16px 0;
 }
 
 .answer{
 width:100%;
 box-sizing:border-box;
-margin-bottom:8px;
 }
 
 .input{
 width:100%;
 box-sizing:border-box;
-margin-bottom:8px;
 font-size:18px;
 }
 
 .mnemo{
-display:block;
 width:100%;
 min-width:0;
-margin-bottom:8px;
-font-size:16px;
 }
 
 button{
 width:100%;
 }
 
-.song{
-min-height:auto;
-}
-
-textarea.songedit{
-width:100%;
-min-height:350px;
-resize:none;
+.songgrid{
+grid-template-columns:1fr;
 }
 
 }
