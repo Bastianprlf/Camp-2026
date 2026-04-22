@@ -131,9 +131,12 @@ h1{
   border:1px solid var(--border);
   border-radius:8px;
   padding:12px 14px;
-  display:flex;
+  display:grid;
+  grid-template-columns:24px 1fr;
+  grid-template-rows:auto auto;
+  column-gap:14px;
+  row-gap:8px;
   align-items:center;
-  gap:12px;
   transition:border-color .15s;
 }
 .card:hover{border-color:var(--border-strong)}
@@ -141,19 +144,31 @@ h1{
 .card.wrong{background:var(--error-bg);border-color:var(--error-border)}
 
 .letter{
+  grid-row:1 / span 2;
+  align-self:center;
   font-family:'JetBrains Mono',monospace;
   font-size:18px;
   font-weight:700;
-  width:20px;
   text-align:center;
-  flex-shrink:0;
 }
 
-.mnemonic{flex:1;font-size:15px;min-width:0}
+.mnemonic-wrap{grid-column:2;grid-row:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mnemonic{font-size:15px;line-height:1.35;overflow-wrap:anywhere}
 .syl-dash{font-weight:700;color:var(--text)}
 .syl-dot{color:var(--muted);font-weight:400}
 .sep{color:var(--muted);margin:0 3px;opacity:.5}
 .sep-space{display:inline-block;width:.4em}
+.solution-line{
+  display:none;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.2em;
+  line-height:1;
+}
+body.solutions-shown .solution-line{display:block}
+
+.controls{grid-column:2;grid-row:2;display:flex;gap:8px;align-items:center}
 
 .morse-input{
   font-family:'JetBrains Mono',monospace;
@@ -208,16 +223,6 @@ h1{
   flex-shrink:0;
 }
 .play-btn:hover{background:#f5f2ec;border-color:var(--border-strong)}
-
-.solution-badge{
-  display:none;
-  font-family:'JetBrains Mono',monospace;
-  font-size:12px;
-  color:var(--muted);
-  letter-spacing:.2em;
-  min-width:54px;
-}
-body.solutions-shown .solution-badge{display:inline-block}
 
 .translator{
   margin-top:56px;
@@ -388,7 +393,7 @@ function renderWord(word){
     }
     const isDash = /o/i.test(tok);
     return `<span class="${isDash ? 'syl-dash' : 'syl-dot'}">${tok}</span>`;
-  }).join('');
+  }).join('\u200B');
 }
 
 const grid = document.getElementById('grid');
@@ -401,11 +406,15 @@ DATA.forEach(d => {
 
   card.innerHTML = `
     <div class="letter">${d.letter}</div>
-    <div class="mnemonic">${renderWord(d.word)}</div>
-    <span class="solution-badge">${pretty}</span>
-    <input class="morse-input" type="text" maxlength="8" placeholder="· −" aria-label="Morse pour ${d.letter}">
-    <button class="play-btn" type="button" title="Écouter" aria-label="Écouter">▶</button>
-    <button class="check-btn" type="button">OK</button>
+    <div class="mnemonic-wrap">
+      <div class="mnemonic">${renderWord(d.word)}</div>
+      <div class="solution-line">${pretty}</div>
+    </div>
+    <div class="controls">
+      <input class="morse-input" type="text" maxlength="8" placeholder="· −" aria-label="Morse pour ${d.letter}">
+      <button class="play-btn" type="button" title="Écouter" aria-label="Écouter">▶</button>
+      <button class="check-btn" type="button">OK</button>
+    </div>
   `;
   grid.appendChild(card);
 
