@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apprendre le Morse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fafaf7;
+  --card:#ffffff;
+  --text:#171717;
+  --muted:#8a8a85;
+  --border:#e7e4de;
+  --border-strong:#d4d1c9;
+  --accent:#171717;
+  --success:#15803d;
+  --success-bg:#ecfdf5;
+  --success-border:#a7f3d0;
+  --error:#b91c1c;
+  --error-bg:#fef2f2;
+  --error-border:#fecaca;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Manrope',sans-serif;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+.container{
+  max-width:980px;
+  margin:0 auto;
+  padding:64px 24px 80px;
+}
+
+header{margin-bottom:40px}
+h1{
+  font-size:32px;
+  font-weight:600;
+  letter-spacing:-.02em;
+  margin-bottom:8px;
+}
+.subtitle{
+  color:var(--muted);
+  font-size:15px;
+  max-width:540px;
+}
+
+.rule{
+  margin:32px 0;
+  padding:20px 24px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:15px;
+}
+.rule strong{font-weight:600}
+.rule code{
+  font-family:'JetBrains Mono',monospace;
+  background:#f0ede6;
+  padding:1px 7px;
+  border-radius:4px;
+  font-size:13px;
+  font-weight:500;
+}
+
+.status{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:16px;
+  margin-bottom:24px;
+}
+.score{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  font-size:14px;
+}
+.score-num{
+  font-family:'JetBrains Mono',monospace;
+  font-weight:600;
+  font-size:16px;
+}
+.score-total{color:var(--muted)}
+.progress{
+  flex:1;
+  height:2px;
+  background:var(--border);
+  border-radius:2px;
+  overflow:hidden;
+  max-width:240px;
+  margin:0 8px;
+}
+.progress-bar{
+  height:100%;
+  background:var(--accent);
+  width:0;
+  transition:width .4s ease;
+}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn{
+  font-family:inherit;
+  font-size:13px;
+  font-weight:500;
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--border);
+  padding:7px 12px;
+  border-radius:6px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.btn:hover{border-color:var(--border-strong);background:#f5f2ec}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:8px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  transition:border-color .15s;
+}
+.card:hover{border-color:var(--border-strong)}
+.card.correct{background:var(--success-bg);border-color:var(--success-border)}
+.card.wrong{background:var(--error-bg);border-color:var(--error-border)}
+
+.letter{
+  font-family:'JetBrains Mono',monospace;
+  font-size:18px;
+  font-weight:700;
+  width:20px;
+  text-align:center;
+  flex-shrink:0;
+}
+
+.mnemonic{flex:1;font-size:15px;min-width:0}
+.syl-dash{font-weight:700;color:var(--text)}
+.syl-dot{color:var(--muted);font-weight:400}
+.sep{color:var(--muted);margin:0 3px;opacity:.5}
+.sep-space{display:inline-block;width:.4em}
+
+.morse-input{
+  font-family:'JetBrains Mono',monospace;
+  font-size:14px;
+  font-weight:500;
+  background:var(--bg);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:5px;
+  padding:6px 8px;
+  width:90px;
+  letter-spacing:.15em;
+  outline:none;
+  text-align:center;
+  transition:border-color .15s;
+}
+.morse-input::placeholder{color:var(--muted);opacity:.5}
+.morse-input:focus{border-color:var(--text)}
+.card.correct .morse-input{color:var(--success);border-color:var(--success-border);background:#fff}
+.card.wrong .morse-input{color:var(--error);border-color:var(--error-border);background:#fff}
+
+.check-btn{
+  font-family:inherit;
+  font-size:12px;
+  font-weight:500;
+  background:var(--text);
+  color:#fff;
+  border:1px solid var(--text);
+  padding:6px 10px;
+  border-radius:5px;
+  cursor:pointer;
+  transition:opacity .15s;
+  flex-shrink:0;
+}
+.check-btn:hover{opacity:.85}
+.card.correct .check-btn{background:var(--success);border-color:var(--success)}
+.card.wrong .check-btn{background:var(--error);border-color:var(--error)}
+
+.play-btn{
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text);
+  width:28px;height:28px;
+  border-radius:5px;
+  cursor:pointer;
+  transition:all .15s;
+  font-size:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  flex-shrink:0;
+}
+.play-btn:hover{background:#f5f2ec;border-color:var(--border-strong)}
+
+.solution-badge{
+  display:none;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.2em;
+  min-width:54px;
+}
+body.solutions-shown .solution-badge{display:inline-block}
+
+.translator{
+  margin-top:56px;
+  padding-top:40px;
+  border-top:1px solid var(--border);
+}
+.translator h2{
+  font-size:20px;
+  font-weight:600;
+  margin-bottom:6px;
+  letter-spacing:-.01em;
+}
+.translator .desc{
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:20px;
+}
+.field{margin-bottom:14px}
+.field label{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:12px;
+  font-weight:500;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+.field textarea{
+  width:100%;
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:12px 14px;
+  font-family:inherit;
+  font-size:14px;
+  resize:vertical;
+  min-height:60px;
+  outline:none;
+  transition:border-color .15s;
+  line-height:1.6;
+}
+.field textarea:focus{border-color:var(--text)}
+.field .out{
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:.2em;
+  background:#f5f2ec;
+}
+.play-all{
+  font-family:inherit;
+  font-size:12px;
+  font-weight:500;
+  background:transparent;
+  border:none;
+  color:var(--text);
+  padding:0;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.play-all:hover{color:var(--muted)}
+
+@media (max-width:500px){
+  .container{padding:40px 16px 60px}
+  h1{font-size:26px}
+  .grid{grid-template-columns:1fr}
+  .card{padding:10px 12px;gap:8px}
+  .mnemonic{font-size:14px}
+  .morse-input{width:72px;font-size:13px}
+  .status{flex-direction:column;align-items:stretch}
+  .progress{max-width:none;margin:0}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Apprendre le Morse</h1>
+    <p class="subtitle">Méthode mnémotechnique par les syllabes : 26 mots, 26 lettres.</p>
+  </header>
+
+  <div class="rule">
+    <strong>Règle :</strong> une syllabe contenant un <code>o</code> = <code>−</code>, toutes les autres = <code>·</code>
+  </div>
+
+  <div class="status">
+    <div class="score">
+      <span class="score-num" id="scoreVal">0</span>
+      <span class="score-total">/ 26 validés</span>
+    </div>
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="actions">
+      <button class="btn" id="validateAllBtn">Tout valider</button>
+      <button class="btn" id="showBtn">Solutions</button>
+      <button class="btn" id="resetBtn">Réinitialiser</button>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <section class="translator">
+    <h2>Traducteur</h2>
+    <p class="desc">Tape un texte pour obtenir son code Morse.</p>
+
+    <div class="field">
+      <label>Texte</label>
+      <textarea id="txtIn" spellcheck="false">Bonjour</textarea>
+    </div>
+
+    <div class="field">
+      <label>
+        <span>Morse</span>
+        <button class="play-all" id="playAllBtn">▶ écouter</button>
+      </label>
+      <textarea class="out" id="txtOut" readonly></textarea>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const DATA = [
+  {letter:'A', word:'Ar|nold',        code:'.-'},
+  {letter:'B', word:'Bo|na|par|te',   code:'-...'},
+  {letter:'C', word:'Co|ca Co|la',    code:'-.-.'},
+  {letter:'D', word:'Do|re|mi',       code:'-..'},
+  {letter:'E', word:'Et',             code:'.'},
+  {letter:'F', word:'Fa|ran|do|le',   code:'..-.'},
+  {letter:'G', word:'Gon|do|le',      code:'--.'},
+  {letter:'H', word:'Hur|lu|ber|lu',  code:'....'},
+  {letter:'I', word:'I|ci',           code:'..'},
+  {letter:'J', word:'Ja|blo|no|vo',   code:'.---'},
+  {letter:'K', word:'Ko|ri|dor',      code:'-.-'},
+  {letter:'L', word:'Li|mo|na|de',    code:'.-..'},
+  {letter:'M', word:'Mo|to',          code:'--'},
+  {letter:'N', word:'No|el',          code:'-.'},
+  {letter:'O', word:'Oh|oh|oh',       code:'---'},
+  {letter:'P', word:'Phi|lo|so|phe',  code:'.--.'},
+  {letter:'Q', word:'Quo|co|ri|co',   code:'--.-'},
+  {letter:'R', word:'Ri|go|ler',      code:'.-.'},
+  {letter:'S', word:'Sa|me|di',       code:'...'},
+  {letter:'T', word:'Thon',           code:'-'},
+  {letter:'U', word:'U|ni|on',        code:'..-'},
+  {letter:'V', word:'Vé|gé|ta|tion',  code:'...-'},
+  {letter:'W', word:'Wa|gon post',    code:'.--'},
+  {letter:'X', word:'Xo|ca|de|ro',    code:'-..-'},
+  {letter:'Y', word:'Yo|ga do|do',    code:'-.--'},
+  {letter:'Z', word:'Zor|ro est|là',  code:'--..'}
+];
+
+const MORSE_MAP = Object.fromEntries(DATA.map(d=>[d.letter, d.code]));
+Object.assign(MORSE_MAP, {
+  '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-',
+  '5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
+  '.':'.-.-.-',',':'--..--','?':'..--..',"'":'.----.','!':'-.-.--',
+  '/':'-..-.','(':'-.--.',')':'-.--.-','&':'.-...',':':'---...',
+  ';':'-.-.-.','=':'-...-','+':'.-.-.','-':'-....-','_':'..--.-',
+  '"':'.-..-.','@':'.--.-.'
+});
+
+function renderWord(word){
+  const tokens = word.match(/[^\s|]+|[\s|]+/g) || [];
+  return tokens.map(tok => {
+    if(/^[\s|]+$/.test(tok)){
+      if(tok.includes(' ')) return '<span class="sep-space"></span><span class="sep">·</span><span class="sep-space"></span>';
+      return '<span class="sep">·</span>';
+    }
+    const isDash = /o/i.test(tok);
+    return `<span class="${isDash ? 'syl-dash' : 'syl-dot'}">${tok}</span>`;
+  }).join('');
+}
+
+const grid = document.getElementById('grid');
+
+DATA.forEach(d => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.letter = d.letter;
+  const pretty = d.code.replaceAll('.','·').replaceAll('-','−');
+
+  card.innerHTML = `
+    <div class="letter">${d.letter}</div>
+    <div class="mnemonic">${renderWord(d.word)}</div>
+    <span class="solution-badge">${pretty}</span>
+    <input class="morse-input" type="text" maxlength="8" placeholder="· −" aria-label="Morse pour ${d.letter}">
+    <button class="play-btn" type="button" title="Écouter" aria-label="Écouter">▶</button>
+    <button class="check-btn" type="button">OK</button>
+  `;
+  grid.appendChild(card);
+
+  const input = card.querySelector('.morse-input');
+  const btn = card.querySelector('.check-btn');
+  const playBtn = card.querySelector('.play-btn');
+
+  const normalize = v => v
+    .replaceAll('·','.').replaceAll('•','.')
+    .replaceAll('−','-').replaceAll('—','-').replaceAll('–','-')
+    .replace(/\s+/g,'');
+
+  const validate = () => {
+    const val = normalize(input.value);
+    card.classList.remove('correct','wrong');
+    void card.offsetWidth;
+    if(val === d.code){
+      card.classList.add('correct');
+      playMorse(d.code);
+    } else if(val !== ''){
+      card.classList.add('wrong');
+    }
+    updateScore();
+  };
+
+  btn.addEventListener('click', validate);
+  input.addEventListener('keydown', e => { if(e.key === 'Enter') validate(); });
+  input.addEventListener('input', () => {
+    if(card.classList.contains('correct') || card.classList.contains('wrong')){
+      card.classList.remove('correct','wrong');
+      updateScore();
+    }
+    input.value = input.value
+      .replaceAll('·','.').replaceAll('•','.')
+      .replaceAll('−','-').replaceAll('—','-').replaceAll('–','-')
+      .replace(/[^.\-\s]/g,'');
+  });
+  playBtn.addEventListener('click', () => playMorse(d.code));
+});
+
+function updateScore(){
+  const ok = document.querySelectorAll('.card.correct').length;
+  document.getElementById('scoreVal').textContent = ok;
+  document.getElementById('progressBar').style.width = (ok/26*100) + '%';
+}
+
+document.getElementById('validateAllBtn').addEventListener('click', () => {
+  document.querySelectorAll('.card').forEach(card => {
+    const input = card.querySelector('.morse-input');
+    const d = DATA.find(x => x.letter === card.dataset.letter);
+    const val = input.value
+      .replaceAll('·','.').replaceAll('•','.')
+      .replaceAll('−','-').replaceAll('—','-').replaceAll('–','-')
+      .replace(/\s+/g,'');
+    card.classList.remove('correct','wrong');
+    void card.offsetWidth;
+    if(val === d.code && val !== '') card.classList.add('correct');
+    else if(val !== '') card.classList.add('wrong');
+  });
+  updateScore();
+});
+
+document.getElementById('showBtn').addEventListener('click', e => {
+  const shown = document.body.classList.toggle('solutions-shown');
+  e.target.textContent = shown ? 'Masquer' : 'Solutions';
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.remove('correct','wrong');
+    c.querySelector('.morse-input').value = '';
+  });
+  document.body.classList.remove('solutions-shown');
+  document.getElementById('showBtn').textContent = 'Solutions';
+  updateScore();
+});
+
+const txtIn = document.getElementById('txtIn');
+const txtOut = document.getElementById('txtOut');
+
+function translate(){
+  const cleaned = txtIn.value
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toUpperCase();
+  let out = '';
+  for(const c of cleaned){
+    if(c === ' ') out = out.trimEnd() + ' / ';
+    else if(c === '\n') out += '\n';
+    else if(MORSE_MAP[c]) out += MORSE_MAP[c].replaceAll('.','·').replaceAll('-','−') + ' ';
+  }
+  txtOut.value = out.trim();
+}
+txtIn.addEventListener('input', translate);
+translate();
+
+let audioCtx;
+const UNIT = 90;
+
+function ensureCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  else if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function scheduleBeep(ctx, start, durMs, freq=620){
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  const dur = durMs/1000;
+  gain.gain.setValueAtTime(0, start);
+  gain.gain.linearRampToValueAtTime(.22, start + .006);
+  gain.gain.setValueAtTime(.22, start + dur - .012);
+  gain.gain.linearRampToValueAtTime(0, start + dur);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(start);
+  osc.stop(start + dur + .02);
+}
+
+function playMorse(code){
+  const ctx = ensureCtx();
+  let t = ctx.currentTime + .02;
+  for(const ch of code){
+    const dur = (ch === '.') ? UNIT : UNIT * 3;
+    scheduleBeep(ctx, t, dur);
+    t += (dur + UNIT) / 1000;
+  }
+}
+
+document.getElementById('playAllBtn').addEventListener('click', () => {
+  const cleaned = txtIn.value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+  const ctx = ensureCtx();
+  let t = ctx.currentTime + .03;
+  for(const c of cleaned){
+    if(c === ' '){ t += (UNIT * 7) / 1000; continue; }
+    const code = MORSE_MAP[c];
+    if(!code) continue;
+    for(const ch of code){
+      const dur = (ch === '.') ? UNIT : UNIT * 3;
+      scheduleBeep(ctx, t, dur);
+      t += (dur + UNIT) / 1000;
+    }
+    t += (UNIT * 2) / 1000;
+  }
+});
+</script>
+</body>
+</html>
